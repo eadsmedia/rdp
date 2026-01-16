@@ -7,24 +7,28 @@ jobs:
     steps:
       - name: Install Chrome Remote Desktop
         run: |
+          # Use Homebrew to install the host software
           brew install --cask chrome-remote-desktop-host
           
       - name: Setup and Start Session
         run: |
-          # Define the correct macOS path for the CRD binary
-          CRD_PATH="/Library/PrivilegedHelperTools/com.google.ChromeRemoteDesktop.bundle/Contents/MacOS/com.google.ChromeRemoteDesktop.NativeMessagingHost"
+          # Define the correct macOS binary path
+          # It is located in PrivilegedHelperTools on macOS
+          CRD_BIN="/Library/PrivilegedHelperTools/com.google.ChromeRemoteDesktop.bundle/Contents/MacOS/remoting_start_host"
           
-          # If that path doesn't exist, we search for it
-          if [ ! -f "$CRD_PATH" ]; then
-            CRD_PATH=$(find /Library -name "remoting_start_host" -type f 2>/dev/null | head -n 1)
+          # Fallback: Find it if the version changed the path
+          if [ ! -f "$CRD_BIN" ]; then
+            CRD_BIN=$(find /Library/PrivilegedHelperTools -name "remoting_start_host" | head -n 1)
           fi
           
-          echo "Using binary at: $CRD_PATH"
+          echo "Found binary at: $CRD_BIN"
           
-          # RUN YOUR COMMAND BELOW (Remember to use a FRESH code from Google)
-          DISPLAY= /opt/google/chrome-remote-desktop/start-host --code="4/0ASc3gC1SzvLKSINCM3q1H_ayAF5bu-fuXDZ-kxrHpzTwwrIchJ1DAwQ4aXZYU5Zl3bdpjQ" --redirect-url="https://remotedesktop.google.com/_/oauthredirect" --name=$(hostname)
+          # PASTE YOUR ENTIRE COMMAND FROM GOOGLE BELOW
+          # Replace the --code="..." part with your fresh code
+          sudo "$CRD_BIN" --code="4/0ASc3gC1PGrubqwHeW_PLPZpZ3380Nxd2Yvn69PmmONscxRWGcU6B6XXiSqTZK2rL33LjEA" --redirect-url="https://remotedesktop.google.com/_/oauthredirect" --name=$(hostname)
           
       - name: Keep Runner Alive
         run: |
           echo "Keep-alive active. Connect at https://remotedesktop.google.com/access"
+          # Keeps the session open for 6 hours
           sleep 21600
