@@ -1,29 +1,23 @@
-name: macOS Remote Desktop
+name: macOS Chrome Remote Desktop
 on: workflow_dispatch
 
 jobs:
   build:
     runs-on: macos-latest
     steps:
-      - name: Install Ngrok
-        run: brew install --cask ngrok
-      - name: Authenticate Ngrok
-        run: ngrok config add-authtoken ${{ secrets.NGROK_AUTH_TOKEN }}
-      - name: Enable Screen Sharing
+      - name: Download and Install Chrome Remote Desktop
         run: |
-          # Create a new user so we don't mess with the runner user
-          sudo dscl . -create /Users/vncuser
-          sudo dscl . -create /Users/vncuser UserShell /bin/bash
-          sudo dscl . -create /Users/vncuser RealName "VNC User"
-          sudo dscl . -create /Users/vncuser UniqueID 1001
-          sudo dscl . -create /Users/vncuser PrimaryGroupID 80
-          sudo dscl . -create /Users/vncuser NFSHomeDirectory /Users/vncuser
-          sudo dscl . -passwd /Users/vncuser "Password123"
-          sudo createhomedir -c -u vncuser
-          # Enable Screen Sharing (VNC)
-          sudo /System/Library/CoreServices/RemoteManagement/ARDAgent.app/Contents/Resources/kickstart -activate -configure -access -on -clientopts -setvncpassword -vncpasswd "Password123" -restart -agent -privs -all
-      - name: Start Ngrok Tunnel
+          curl -L -o install.pkg https://dl.google.com/chrome-remote-desktop/chromeremotedesktophost.pkg
+          sudo installer -pkg install.pkg -target /
+          
+      - name: Setup Chrome Remote Desktop Session
         run: |
-          ngrok tcp 5900 --log=stdout &
-          sleep 21600 # This keeps the job running for 6 hours
-
+          # Use the command you generated from Google's headless setup page
+          # Replace the placeholder below with your actual command if the token has expired
+          DISPLAY= /opt/google/chrome-remote-desktop/start-host --code="4/0ASc3gC0n4LT4ECjhn05MItT-JtlwutwQrpsfBeeAaVMDRsYET7Da1Lx07JHg7wl2TJmrIg" --redirect-url="https://remotedesktop.google.com/_/oauthredirect" --name=$(hostname)
+          
+      - name: Keep Runner Alive
+        run: |
+          echo "Keep-alive active. Connect via https://remotedesktop.google.com/access"
+          # This keeps the VM running for 6 hours (the GitHub max)
+          sleep 21600 
