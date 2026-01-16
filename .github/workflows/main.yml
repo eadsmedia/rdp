@@ -5,19 +5,26 @@ jobs:
   build:
     runs-on: macos-latest
     steps:
-      - name: Install Chrome Remote Desktop via Homebrew
+      - name: Install Chrome Remote Desktop
         run: |
-          # Homebrew handles the download and install much better than curl
           brew install --cask chrome-remote-desktop-host
           
-      - name: Setup Chrome Remote Desktop Session
+      - name: Setup and Start Session
         run: |
-          # Use your specific command from Google
-          # Note: If this fails, generate a NEW code at remotedesktop.google.com/headless
-          DISPLAY= /opt/google/chrome-remote-desktop/start-host --code="4/0ASc3gC0n4LT4ECjhn05MItT-JtlwutwQrpsfBeeAaVMDRsYET7Da1Lx07JHg7wl2TJmrIg" --redirect-url="https://remotedesktop.google.com/_/oauthredirect" --name=$(hostname)
+          # Define the correct macOS path for the CRD binary
+          CRD_PATH="/Library/PrivilegedHelperTools/com.google.ChromeRemoteDesktop.bundle/Contents/MacOS/com.google.ChromeRemoteDesktop.NativeMessagingHost"
+          
+          # If that path doesn't exist, we search for it
+          if [ ! -f "$CRD_PATH" ]; then
+            CRD_PATH=$(find /Library -name "remoting_start_host" -type f 2>/dev/null | head -n 1)
+          fi
+          
+          echo "Using binary at: $CRD_PATH"
+          
+          # RUN YOUR COMMAND BELOW (Remember to use a FRESH code from Google)
+          DISPLAY= /opt/google/chrome-remote-desktop/start-host --code="4/0ASc3gC1SzvLKSINCM3q1H_ayAF5bu-fuXDZ-kxrHpzTwwrIchJ1DAwQ4aXZYU5Zl3bdpjQ" --redirect-url="https://remotedesktop.google.com/_/oauthredirect" --name=$(hostname)
           
       - name: Keep Runner Alive
         run: |
-          echo "Keep-alive active. Connect via https://remotedesktop.google.com/access"
-          # This keeps the VM running for 6 hours
-          sleep 21600 
+          echo "Keep-alive active. Connect at https://remotedesktop.google.com/access"
+          sleep 21600
