@@ -23,4 +23,7 @@ jobs:
           # Enable Screen Sharing (VNC)
           sudo /System/Library/CoreServices/RemoteManagement/ARDAgent.app/Contents/Resources/kickstart -activate -configure -access -on -clientopts -setvncpassword -vncpasswd "Password123" -restart -agent -privs -all
       - name: Start Ngrok Tunnel
-        run: ngrok tcp 5900
+        run: |
+          ngrok tcp 5900 --log=stdout &
+          sleep 21600 # This keeps the job running for 6 hours
+
