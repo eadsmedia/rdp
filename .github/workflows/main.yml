@@ -5,19 +5,19 @@ jobs:
   build:
     runs-on: macos-latest
     steps:
-      - name: Download and Install Chrome Remote Desktop
+      - name: Install Chrome Remote Desktop via Homebrew
         run: |
-          curl -L -o install.pkg https://dl.google.com/chrome-remote-desktop/chromeremotedesktophost.pkg
-          sudo installer -pkg install.pkg -target /
+          # Homebrew handles the download and install much better than curl
+          brew install --cask chrome-remote-desktop-host
           
       - name: Setup Chrome Remote Desktop Session
         run: |
-          # Use the command you generated from Google's headless setup page
-          # Replace the placeholder below with your actual command if the token has expired
+          # Use your specific command from Google
+          # Note: If this fails, generate a NEW code at remotedesktop.google.com/headless
           DISPLAY= /opt/google/chrome-remote-desktop/start-host --code="4/0ASc3gC0n4LT4ECjhn05MItT-JtlwutwQrpsfBeeAaVMDRsYET7Da1Lx07JHg7wl2TJmrIg" --redirect-url="https://remotedesktop.google.com/_/oauthredirect" --name=$(hostname)
           
       - name: Keep Runner Alive
         run: |
           echo "Keep-alive active. Connect via https://remotedesktop.google.com/access"
-          # This keeps the VM running for 6 hours (the GitHub max)
+          # This keeps the VM running for 6 hours
           sleep 21600 
