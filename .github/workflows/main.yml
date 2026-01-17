@@ -8,10 +8,9 @@ jobs:
     runs-on: macos-latest
 
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      - name: Install noVNC + VNC
+      - name: Install VNC + noVNC
         run: |
           brew update
           brew install tiger-vnc novnc websockify
@@ -21,16 +20,20 @@ jobs:
           mkdir -p ~/.vnc
           echo "debug123" | vncpasswd -f > ~/.vnc/passwd
           chmod 600 ~/.vnc/passwd
-          echo '#!/bin/sh
+
+          cat > ~/.vnc/xstartup << 'EOF'
+          #!/bin/sh
           unset SESSION_MANAGER
           unset DBUS_SESSION_BUS_ADDRESS
-          exec /System/Library/CoreServices/Finder.app/Contents/MacOS/Finder &' > ~/.vnc/xstartup
+          open -a Finder
+          EOF
+
           chmod +x ~/.vnc/xstartup
 
       - name: Start VNC server
         run: |
           vncserver -localhost no :1
 
-      - name: Start noVNC (Web)
+      - name: Start noVNC
         run: |
           websockify --web=/opt/homebrew/share/novnc/ 6080 localhost:5901
