@@ -1,4 +1,4 @@
-name: macOS noVNC Debug
+name: macOS noVNC Debug (FIXED)
 
 on:
   workflow_dispatch:
@@ -10,10 +10,15 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Install VNC + noVNC
+      - name: Install VNC + websockify
         run: |
           brew update
-          brew install tiger-vnc novnc websockify
+          brew install tiger-vnc websockify
+
+      - name: Install noVNC
+        run: |
+          git clone https://github.com/novnc/noVNC.git $HOME/noVNC
+          git clone https://github.com/novnc/websockify.git $HOME/noVNC/utils/websockify
 
       - name: Configure VNC
         run: |
@@ -36,4 +41,6 @@ jobs:
 
       - name: Start noVNC
         run: |
-          websockify --web=/opt/homebrew/share/novnc/ 6080 localhost:5901
+          $HOME/noVNC/utils/novnc_proxy \
+            --vnc localhost:5901 \
+            --listen 6080
