@@ -14,7 +14,7 @@ jobs:
       - name: Install noVNC + VNC
         run: |
           brew update
-          brew install tigervnc novnc websockify
+          brew install tiger-vnc novnc websockify
 
       - name: Configure VNC
         run: |
