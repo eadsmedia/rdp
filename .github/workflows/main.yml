@@ -1,34 +1,36 @@
-name: macOS Chrome Remote Desktop
-on: workflow_dispatch
+name: macOS noVNC Debug
+
+on:
+  workflow_dispatch:
 
 jobs:
-  build:
+  novnc:
     runs-on: macos-latest
+
     steps:
-      - name: Install Chrome Remote Desktop
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install noVNC + VNC
         run: |
-          # Use Homebrew to install the host software
-          brew install --cask chrome-remote-desktop-host
-          
-      - name: Setup and Start Session
+          brew update
+          brew install tigervnc novnc websockify
+
+      - name: Configure VNC
         run: |
-          # Define the correct macOS binary path
-          # It is located in PrivilegedHelperTools on macOS
-          CRD_BIN="/Library/PrivilegedHelperTools/com.google.ChromeRemoteDesktop.bundle/Contents/MacOS/remoting_start_host"
-          
-          # Fallback: Find it if the version changed the path
-          if [ ! -f "$CRD_BIN" ]; then
-            CRD_BIN=$(find /Library/PrivilegedHelperTools -name "remoting_start_host" | head -n 1)
-          fi
-          
-          echo "Found binary at: $CRD_BIN"
-          
-          # PASTE YOUR ENTIRE COMMAND FROM GOOGLE BELOW
-          # Replace the --code="..." part with your fresh code
-          sudo "$CRD_BIN" --code="4/0ASc3gC1PGrubqwHeW_PLPZpZ3380Nxd2Yvn69PmmONscxRWGcU6B6XXiSqTZK2rL33LjEA" --redirect-url="https://remotedesktop.google.com/_/oauthredirect" --name=$(hostname)
-          
-      - name: Keep Runner Alive
+          mkdir -p ~/.vnc
+          echo "debug123" | vncpasswd -f > ~/.vnc/passwd
+          chmod 600 ~/.vnc/passwd
+          echo '#!/bin/sh
+          unset SESSION_MANAGER
+          unset DBUS_SESSION_BUS_ADDRESS
+          exec /System/Library/CoreServices/Finder.app/Contents/MacOS/Finder &' > ~/.vnc/xstartup
+          chmod +x ~/.vnc/xstartup
+
+      - name: Start VNC server
         run: |
-          echo "Keep-alive active. Connect at https://remotedesktop.google.com/access"
-          # Keeps the session open for 6 hours
-          sleep 21600
+          vncserver -localhost no :1
+
+      - name: Start noVNC (Web)
+        run: |
+          websockify --web=/opt/homebrew/share/novnc/ 6080 localhost:5901
